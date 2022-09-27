@@ -14,7 +14,10 @@ export const Home = () => {
     }
 
     function handleGuestAdd(){
-        
+        if(guest === ''){
+            Alert.alert('erro', 'Favor informar um nome para o convidado')
+            return;
+        }
         setGuests(prevState => [...prevState,guest ])
         setGuest('')
     }
