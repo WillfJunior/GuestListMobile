@@ -1,40 +1,63 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View , Text, TextInput, TouchableOpacity, FlatList, Alert} from 'react-native'
-import { Guest } from '../../components/Guest';
+import { Product } from '../../components/Product';
 import { styles } from './style';
+import { Produto } from '../../models/Product';
+import { ProdutoCreate } from '../../models/ProductCreate';
+import axios from 'axios';
+import { base_ulr } from '../../services/ProductService';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 
 
 export const Home = () => {
-    const [guest, setGuest] = useState('')
-    const [guests, setGuests] = useState<string[]>([])
+    const [product, setProduct] = useState('')
+    const [products, setProducts] = useState<Produto[]>([])
 
-    function handleGuestChange(name:string){
-        setGuest(name)
+    const dataAtual = format(new Date(), "d 'de' LLLL 'de' yyyy",{
+        locale:ptBR
+    });
+
+    useEffect(() => {
+        axios.get<Produto[]>(base_ulr)
+            .then(res => {
+                setProducts(res.data)
+            })
+    },[setProducts])
+
+    function handleProductChange(name:string){
+        setProduct(name)
     }
-
-    function handleGuestAdd(){
-        if(guest === ''){
-            Alert.alert('erro', 'Favor informar um nome para o convidado')
+    
+    
+    async function handleProductAdd(){
+        if(product === ''){
+            Alert.alert('erro', 'Favor informar um nome para o produto')
             return;
         }
-        setGuests(prevState => [...prevState,guest ])
-        setGuest('')
+        
+        const { data } = await axios.post<Produto>(base_ulr,{produto: product})
+        let produto = new Produto(data.produto,data.id)
+        setProducts(prevState => [...prevState,produto])
+        setProduct('')
     }
 
-    function handleGuestRemove(name: string){
-        console.log(name)
+    function handleProductRemove(id: number, produto:string){
         Alert.alert(
             "Deletar",
-            `Confirma a exclusão do convidado ${name}`,
+            `Confirma a exclusão do Produto ${produto}`,
             [
               {
                 text: "Não",
                 style: "cancel"
               },
-              { text: "Sim", 
-              onPress: () => 
-              setGuests(prevState => prevState.filter(guest => guest !== name)) 
+              { text: "Sim",
+              onPress: () => {
+                axios.delete(`${base_ulr}/${id}`).then(res => setProducts(prevState => 
+                    prevState.filter(produto => produto.id !== id)))
+              }
+              
               }
             ]
           );
@@ -42,37 +65,37 @@ export const Home = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Niver Will</Text>
-            <Text style={styles.subtitle}>Sábado, 05 de Novembro de 2022</Text>
+            <Text style={styles.title}>Lista de Compras</Text>
+            <Text style={styles.subtitle}>{dataAtual}</Text>
 
             <View style={styles.form}>
                 <TextInput
                     style={styles.input}
-                    placeholder='Nome do Convidado'
+                    placeholder='Nome do Produto'
                     placeholderTextColor='#6B6B6B'
-                    onChangeText={text => handleGuestChange(text)}
-                    value={guest}
+                    onChangeText={text => handleProductChange(text)}
+                    value={product}
                 />
 
-                <TouchableOpacity style={styles.button} onPress={handleGuestAdd}>
+                <TouchableOpacity style={styles.button} onPress={handleProductAdd}>
                     <Text style={styles.buttonText}>+</Text>
                 </TouchableOpacity>
             </View>
             <FlatList 
             
-                keyExtractor={guest => guest}
-                data={guests}
+                keyExtractor={guest => guest.id.toString()}
+                data={products}
                 renderItem={({ item }) => (
-                    <Guest
-                        key={item}
-                        name={item}
-                        onRemove={() => handleGuestRemove(item)}
+                    <Product
+                        key={item.id}
+                        name={item.produto}
+                        onRemove={() => handleProductRemove(item.id,item.produto)}
                     />
                 )}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={() => (
                     <Text style={styles.listEmptyText}>
-                        Ainda não tem convidados na lista.
+                        Não há itens na Lista.
                     </Text>
                 )}
             

@@ -7,7 +7,7 @@ type Props = {
     onRemove: () => void;
 }
 
-export const Guest = ({ name , onRemove}: Props) => {
+export const Product = ({ name , onRemove}: Props) => {
 
     
     return(
