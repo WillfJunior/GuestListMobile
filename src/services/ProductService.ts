@@ -1,4 +1,4 @@
 
 
-export const base_ulr = 'https://listacomprasapi.herokuapp.com/listacompras'
+export const base_ulr = 'https://shoppinglist-eqrm.onrender.com/listacompras'
 
