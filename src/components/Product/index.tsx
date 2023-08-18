@@ -1,6 +1,7 @@
 import { View , Text,TouchableOpacity} from "react-native"
 
 import { styles } from './style'
+import React = require("react");
 
 type Props = {
     name:string;
